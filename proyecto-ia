@@ -1,0 +1,400 @@
+(setf *raton* 2 *gato* 1)
+(setf tablero (list
+			1 0 1 0 1 0 1 0
+       			0 0 0 0 0 0 0 0
+       			0 0 0 0 0 0 0 0
+       			0 0 0 0 0 0 0 0
+       			0 0 0 0 0 0 0 0
+       			0 0 0 0 0 0 0 0
+       			0 0 0 0 0 0 0 0
+       			0 0 0 2 0 0 0 0 ))
+(setf *jugador* 0)
+
+(defun asignarJugador(jugador)
+	(setf *jugador* jugador) 
+)
+
+(defun asignarJugadorAzar()
+	(let* ((jugador (random 2))(jugador (+ 1 jugador)))
+		(setf *jugador* jugador)
+	)
+)
+
+(defun jugador()
+	*jugador*
+)
+
+
+(defun cambiar-turno (jugador)
+	(cond ((= jugador 2) *gato*)
+	      ((= jugador 1) *raton*)
+	)
+)
+
+(defun convertir-a-letras (v)
+ (cond ((equal v 1) "G")
+ ((equal v 2) "R")
+ (t " ")))
+
+(defun imprimir-filaImpar (x y w z)
+	(format t "~&| ~A |   | ~A |   | ~A |   | ~A |   |"
+		(convertir-a-letras x)
+		(convertir-a-letras y)
+                (convertir-a-letras w)
+		(convertir-a-letras z)
+	)
+)
+
+(defun imprimir-filaPar (x y w z)
+	(format t "~&|    | ~A |   | ~A |   | ~A |   | ~A |"
+		(convertir-a-letras x)
+		(convertir-a-letras y)
+                (convertir-a-letras w)
+		(convertir-a-letras z)
+	)
+)
+
+(defun imprimir-tablero (tableroEval)
+ 	(format t "~%")
+	 (imprimir-filaImpar
+		(nth 0 tableroEval) (nth 2 tableroEval) (nth 4 tableroEval) (nth 6 tableroEval))
+ 	(format t "~& --------------------------------")
+ 	(imprimir-filaPar
+		(nth 9 tableroEval) (nth 11 tableroEval) (nth 13 tableroEval) (nth 15 tableroEval))
+ 	(format t "~& ------------------------------- ")
+	(imprimir-filaImpar
+		(nth 16 tableroEval) (nth 18 tableroEval) (nth 20 tableroEval) (nth 22 tableroEval))
+        (format t "~& --------------------------------")
+        (imprimir-filaPar
+             (nth 25 tableroEval) (nth 27 tableroEval) (nth 29 tableroEval) (nth 31 tableroEval))
+        (format t "~%---------------------------------")
+	 (imprimir-filaImpar
+		(nth 32 tableroEval) (nth 34 tableroEval) (nth 36 tableroEval) (nth 38 tableroEval))
+ 	(format t "~& --------------------------------")
+ 	(imprimir-filaPar
+		(nth 41 tableroEval) (nth 43 tableroEval) (nth 45 tableroEval) (nth 47 tableroEval))
+ 	(format t "~& --------------------------------")
+	(imprimir-filaImpar
+		(nth 48 tableroEval) (nth 50 tableroEval) (nth 52 tableroEval) (nth 54 tableroEval))
+        (format t "~& --------------------------------")
+        (imprimir-filaPar
+             (nth 57 tableroEval) (nth 59 tableroEval) (nth 61 tableroEval) (nth 63 tableroEval))
+        
+)
+
+;;Verifica si la ficha esta en la ultima fila
+(defun ultima-filaP(pos)
+	(= (floor (/ pos 8)) 7)
+)
+
+;;Verifica si la ficha esta en la primera fila
+(defun primera-filaP (pos)
+	(=  (floor (/ pos 8)) 0)
+)
+
+;;Verifica que la ficha esta en una fila que comienza con una ficha
+(defun fila-inicia-fichaP (pos)
+	(= (mod (floor (/ pos 8)) 2) 0 )
+)
+
+
+;;Verifica que la ficha esta en una fila que comienza con un espacio en blanco, si es asi no se puede realizar la jugada
+(defun fila-inicia-espacio-blancoP (pos)
+	(= (mod (floor (/ pos 8)) 2) 1 )
+)
+
+(defun subir-izq(jugador pos tableroEval)
+  (let ((tableroAux (copy-list tableroEval)))
+  (cond ((or (primera-filaP pos)
+             ( and (fila-inicia-fichaP pos)
+		   (= (mod pos 8) 0) 
+	     )
+	     (/= (nth (- pos 9) tableroAux) 0)
+             (/= jugador *raton*)
+	  ) 
+           ())
+        (t (progn (setf (nth pos tableroAux) 0) 
+			(setf (nth (- pos 9) tableroAux) jugador)
+		tableroAux ))
+   )
+   )
+)
+
+(defun jugarSubir-Izq(pos)
+	(cond ((null (subir-izq *jugador* pos tablero)) tablero)
+	      (t (setf tablero (subir-izq *jugador* pos tablero)))
+	)
+)
+
+(defun subir-der(jugador pos tableroEval)
+    (let ((tableroAux (copy-list tableroEval)))
+    (cond ((or  (primera-filaP pos)
+		( and (fila-inicia-espacio-blancoP pos)
+				(= (mod pos 8) 7)
+		)
+		(/= (nth (- pos 7) tableroAux) 0)
+	
+		(/= jugador *raton*)
+	  ) 
+           ())
+        (t (progn (setf (nth pos tableroAux) 0) 
+		 (setf (nth (- pos 7) tableroAux) jugador)
+		tableroAux ))
+   )
+   )
+)
+
+(defun jugarSubir-Der(pos)
+	(cond ((null (subir-der *jugador* pos tablero)) tablero)
+	      (t (setf tablero (subir-der *jugador* pos tablero)))
+	)
+)
+
+(defun bajar-izq(jugador pos tableroEval)
+  (let ((tableroAux (copy-list tableroEval)))
+  (cond ((or  (ultima-filaP pos)
+	      ( and (fila-inicia-fichaP pos)
+		(= (mod pos 8) 0)
+	      )
+	     	(/= (nth (+ pos 7) tableroAux) 0)
+	  ) 
+           ())
+        (t (progn (setf (nth pos tableroAux) 0) 
+		(setf (nth (+ pos 7) tableroAux) jugador)
+		tableroAux ))
+   )
+   )
+)
+
+(defun jugarBajar-Izq(pos)
+	(cond ((null (bajar-izq *jugador*  pos tablero)) tablero)
+	      (t (setf tablero (bajar-izq *jugador* pos tablero)))
+	)
+)
+
+(defun bajar-der(jugador pos tableroEval)
+    (let ((tableroAux (copy-list tableroEval)))
+    (cond ((or  (ultima-filaP pos)
+		( and (fila-inicia-espacio-blancoP pos)
+			(= (mod pos 8) 7)
+                )
+		(/= (nth (+ pos 9) tableroAux) 0)
+	    )
+           ())
+        (t (progn (setf (nth pos tableroAux) 0) 
+		(setf (nth (+ pos 9) tableroAux) jugador)
+		tableroAux ))
+   )
+))
+
+(defun jugarBajar-Der(pos)
+	(cond ((null (bajar-der *jugador* pos tablero)) tablero)
+	      (t (setf tablero (bajar-der *jugador* pos tablero)))
+	)
+)
+
+(defun gatosPorPasar(posRaton tableroEval)
+	(let((var (subseq tableroEval 0 (* (ceiling (/ posRaton 8)) 8)  ))) (length (mapcan #'(lambda (elemento) (and (= elemento 1) (list elemento))) var)) )
+)
+
+(defun posicionFichasTablero (jugador)
+	( let ((tableroAux (copy-list tablero)))
+		(mapcan #'(lambda (x) (and (= x jugador) 
+				(let ( (posFich (- (length (member x (reverse tableroAux))) 1)) )
+					(progn 
+						(setf (nth posFich tableroAux) 0)	
+						(list posFich)
+					 )					
+				)) 
+			   )
+		 tablero)
+	)
+)
+
+(defun posicionFichas (jugador tableroEval)
+	( let ((tableroAux (copy-list tableroEval)))
+		(mapcan #'(lambda (x) (and (= x jugador) 
+				(let ( (posFich (- (length (member x (reverse tableroAux))) 1)) )
+					(progn 
+						(setf (nth posFich tableroAux) 0)	
+						(list posFich)
+					 )					
+				)) 
+			   )
+		 tableroEval)
+	)
+)
+
+(defun ratonGana(tableroEval)
+   (let ((posRaton (car (posicionFichas *raton* tableroEval))))
+		(or (=(gatosPorPasar posRaton tableroEval) 0) (=(floor (/ posRaton 8))0))
+   )
+)
+
+(defun gato-arriba-izq (posRaton tableroEval)
+	(cond ((primera-filaP posRaton) T)
+	      ((and (fila-inicia-fichaP posRaton) (= (mod posRaton 8) 0)) T)
+	      ((= (nth (- posRaton 9) tablero) *gato*) T)
+	      (t nil)
+	)
+)
+
+(defun gato-arriba-der (posRaton tableroEval)
+	(cond ((primera-filaP posRaton) T)
+	       ((and (fila-inicia-espacio-blancoP posRaton) (= (mod posRaton 8) 7)) T)
+	       ((= (nth (- posRaton 7) tableroEval) *gato* ) T)
+	       (t nil)
+	)
+)
+
+(defun gato-abajo-izq (posRaton tableroEval)
+	(cond ((ultima-filaP posRaton) T)
+	       ((and (fila-inicia-fichaP posRaton) (= (mod posRaton 8) 0)) T)	
+	       ((= (nth (+ posRaton 7) tableroEval) *gato* ) T)
+	       (t nil)
+	)
+)
+
+(defun gato-abajo-der (posRaton tableroEval)
+	(cond ((ultima-filaP posRaton) T)
+	       ((and (fila-inicia-espacio-blancoP posRaton) (= (mod posRaton 8) 7)) T)
+		((= (nth (+ posRaton 9) tableroEval) *gato* ) T)
+		(t nil)
+	)
+
+)
+
+(defun gatoGana(tableroEval)
+   (let ((posRaton (car (posicionFichas *raton* tableroEval))))
+	  (and (gato-arriba-izq posRaton tableroEval) (gato-arriba-der posRaton tableroEval) (gato-abajo-izq posRaton tableroEval) (gato-abajo-der posRaton tableroEval))
+  	 
+  )
+)
+
+(defun coordenadas(pos)
+	(list (floor (/ pos 8)) (mod pos 8)
+	)
+)
+
+(defun dist(coordenada1 coordenada2)
+	(let ((x1 (car coordenada1))(x2 (car coordenada2)) (y1 (cadr coordenada1)) (y2 (cadr coordenada2)))
+		(sqrt( + ( * ( - x1 x2)( - x1 x2)) ( * ( - y1 y2)( - y1 y2))))
+	)
+)
+
+(defun distGatoRaton (tableroEval)
+	(let ((posRaton (posicionFichas *raton* tableroEval)) (posGato (posicionFichas *gato* tableroEval)))
+	      (+
+		(dist (coordenadas (nth 0 posRaton))(coordenadas (nth 0 posGato)))
+		(dist (coordenadas (nth 0 posRaton))(coordenadas (nth 1 posGato)))
+		(dist (coordenadas (nth 0 posRaton))(coordenadas (nth 2 posGato)))
+		(dist (coordenadas (nth 0 posRaton))(coordenadas (nth 3 posGato)))
+	      )
+	)
+)
+
+(defun distRatonInicio (tableroEval)
+	(let ((posRaton (posicionFichas *raton* tableroEval)))
+	     (dist (coordenadas (nth 0 posRaton))(coordenadas 0))
+	)
+)
+
+(defun feval (jugador tableroEval)
+	(cond ((= jugador *gato*)
+			(distGatoRaton tableroEval))
+	    	((= jugador *raton*)
+			(- (distGatoRaton tableroEval) (distRatonInicio tableroEval)))
+	)
+)
+
+(defun escoger-estrategia-pc ()
+  (estrategia-minimax)
+)
+
+(defun estrategia-minimax ()
+    (cond((= *jugador* *raton*)
+		(let ((tableroAux (nth 1 (seleccion-minimax tablero (cambiar-turno *jugador*) 4 nil))))
+		     (if (null tableroAux) tablero (setf tablero tableroAux))
+		)
+	 )
+	 (t 
+		(let((tableroAux (nth 1 (seleccion-minimax tablero (cambiar-turno *jugador*) 4 t)) ))
+		    (if (null tableroAux) tablero (setf tablero tableroAux))
+		)		
+	)
+    )
+    
+)
+
+
+(defun gen-mov (jugador tableroEval)
+  (let ((posF (posicionFichas jugador tableroEval)))
+	(mapcan #'(lambda (pos)
+		(mapcan #'(lambda (elemento)
+				(and (consp elemento)(list elemento))
+			 )
+			(list (subir-izq jugador pos tableroEval) 
+			(subir-der jugador pos tableroEval)
+			(bajar-izq jugador pos tableroEval) 
+			(bajar-der jugador pos tableroEval))
+		)
+	     ) 
+	posF)
+  )
+)
+
+(defun sucesores-con-evaluacion (jugador sucesores)
+  (mapcar #'(lambda (n) (list n (feval jugador n))) sucesores)
+)
+
+(defun ganaMaquina()
+	(cond ((= *jugador* *gato*) (ratonGana tablero))
+	      ((= *jugador* *raton*)(gatoGana tablero))
+	)
+)
+
+(defun ganaPersona()
+	(cond ((= *jugador* *gato*) (gatoGana tablero))
+	      ((= *jugador* *raton*)(ratonGana tablero))
+	)
+)
+
+(defun seleccion-minimax (tableroEval jugador profundidad max-min)
+   (cond 	
+	((gatoGana tableroEval) (list -1000 nil))
+	((ratonGana tableroEval) (list 1000 nil))
+	((= 0 profundidad) 
+		(list (feval jugador tableroEval) nil))
+	(max-min
+	 	(let ((sucesores (gen-mov jugador tableroEval)) (mejorValor -1000)(sigJug))
+			(dolist (sucesor sucesores)
+		 		(let* ((v (seleccion-minimax sucesor (cambiar-turno jugador) (- profundidad 1) nil)) )				
+					(if (>= (car v) mejorValor )
+						(progn
+							(setq mejorValor (max mejorValor (car v)))
+							(setq sigJug (copy-list sucesor))
+						)
+					)
+				)
+		 	)
+			(list mejorValor sigJug)
+	        )
+       	 )
+	 (t
+		(let ((sucesores (gen-mov jugador tableroEval)) (mejorValor 1000)(sigJug))
+			(dolist (sucesor sucesores)
+		  		(let* ((v (seleccion-minimax sucesor (cambiar-turno jugador) (- profundidad 1) t)))			
+					(if (<= (car v) mejorValor)
+						(progn
+							(setq mejorValor (min mejorValor (car v)))
+							(setq sigJug (copy-list sucesor))
+						)
+					)
+				)	
+			 )
+			(list  mejorValor sigJug)
+		)
+	)
+   )
+)
+
